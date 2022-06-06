@@ -12,7 +12,7 @@ static const char col_black[]       = "#000000";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { col_white, col_black, col_black },
-	[SchemeSel]  = { col_black, col_white,  col_white  },
+	[SchemeSel]  = { col_black, col_white, col_white  },
 };
 
 /* tagging */
@@ -23,13 +23,14 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class      instance    title       tags mask     isfloating   monitor */
-	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+	/* class           instance    title        tags mask     isfloating   monitor */
+	{ "Brave-browser", NULL,       NULL,        1 << 0,       0,           -1 },
+	{ "krita",         NULL,       NULL,        1 << 2,       0,           -1 },
+	{ "discord",       NULL,       NULL,        1 << 4,       0,           -1 },
 };
 
 /* layout(s) */
-static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
+static const float mfact     = 0.5; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
@@ -54,42 +55,57 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[]    = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_black, "-nf", col_white, "-sb", col_white, "-sf", col_black, NULL };
-static const char *termcmd[]     = { "st", NULL };
-static const char *browsercmd[]  = { "brave-browser", NULL };
+static const char *dmenucmd[]     = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_black, "-nf", col_white, "-sb", col_white, "-sf", col_black, NULL };
+static const char *powermenucmd[] = { "powermenu", "-m", dmenumon, "-fn", dmenufont, "-nb", col_black, "-nf", col_white, "-sb", col_white, "-sf", col_black, NULL };
+static const char *termcmd[]      = { "st", NULL };
+static const char *browsercmd[]   = { "brave-browser", NULL };
+static const char *mixercmd[]     = { "st", "-e", "pulsemixer", NULL };
+static const char *togglemiccmd[] = { "amixer", "-Dpulse", "sset", "Capture", "toggle", NULL };
+static const char *decrvolcmd[]   = { "amixer", "-Dpulse", "sset", "Master", "5%-", NULL };
+static const char *incrvolcmd[]   = { "amixer", "-Dpulse", "sset", "Master", "5%+", NULL };
+static const char *printscrcmd[]  = { "flameshot", "gui", NULL };
+static const char *scrkeycmd[]    = { "sh", "-c", "killall screenkey || screenkey", NULL };
 
 static Key keys[] = {
-	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_space,  spawn,          {.v = dmenucmd } },
-	{ MODKEY,                       XK_Return, spawn,          {.v = termcmd } },
-	{ MODKEY,                       XK_w,      spawn,          {.v = browsercmd } },
-	{ MODKEY,                       XK_b,      togglebar,      {0} },
-	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
-	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
-	{ MODKEY,                       XK_o,      incnmaster,     {.i = -1 } },
-	{ MODKEY|ControlMask,           XK_h,      setmfact,       {.f = -0.05} },
-	{ MODKEY|ControlMask,           XK_l,      setmfact,       {.f = +0.05} },
-	{ MODKEY,                       XK_q,      killclient,     {0} },
-	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
-	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
-	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
-	{ MODKEY|ShiftMask,             XK_space,  zoom,           {0} },
-	{ MODKEY,                       XK_0,      tag,            {.ui = ~0 } },
-	{ MODKEY,                       XK_h,      focusmon,       {.i = -1 } },
-	{ MODKEY,                       XK_l,      focusmon,       {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_h,      tagmon,         {.i = -1 } },
-	{ MODKEY|ShiftMask,             XK_l,      tagmon,         {.i = +1 } },
-	TAGKEYS(                        XK_1,                      0)
-	TAGKEYS(                        XK_2,                      1)
-	TAGKEYS(                        XK_3,                      2)
-	TAGKEYS(                        XK_4,                      3)
-	TAGKEYS(                        XK_5,                      4)
-	TAGKEYS(                        XK_6,                      5)
-	TAGKEYS(                        XK_7,                      6)
-	TAGKEYS(                        XK_8,                      7)
-	TAGKEYS(                        XK_9,                      8)
-	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
+	/* modifier                     key             function        argument */
+	{ MODKEY,                       XK_space,       spawn,          {.v = dmenucmd } },
+	{ MODKEY,                       XK_Return,      spawn,          {.v = termcmd } },
+	{ MODKEY,                       XK_w,           spawn,          {.v = browsercmd } },
+	{ MODKEY|ShiftMask,             XK_c,           spawn,          {.v = mixercmd } },
+	{ MODKEY,                       XK_c,           spawn,          {.v = togglemiccmd } },
+	{ MODKEY,                       XK_minus,       spawn,          {.v = decrvolcmd } },
+	{ MODKEY,                       XK_equal,       spawn,          {.v = incrvolcmd } },
+	{ 0,                            XK_Print,       spawn,          {.v = printscrcmd } },
+	{ 0,                            XK_Scroll_Lock, spawn,          {.v = scrkeycmd } },
+	{ 0,                            XK_Pause,       spawn,          {.v = powermenucmd } },
+	{ MODKEY,                       XK_b,           togglebar,      {0} },
+	{ MODKEY,                       XK_j,           focusstack,     {.i = +1 } },
+	{ MODKEY,                       XK_k,           focusstack,     {.i = -1 } },
+	{ MODKEY,                       XK_i,           incnmaster,     {.i = +1 } },
+	{ MODKEY,                       XK_o,           incnmaster,     {.i = -1 } },
+	{ MODKEY|ControlMask,           XK_h,           setmfact,       {.f = -0.05} },
+	{ MODKEY|ControlMask,           XK_l,           setmfact,       {.f = +0.05} },
+	{ MODKEY,                       XK_q,           killclient,     {0} },
+	{ MODKEY,                       XK_t,           setlayout,      {.v = &layouts[0]} },
+	{ MODKEY,                       XK_f,           setlayout,      {.v = &layouts[1]} },
+	{ MODKEY|ShiftMask,             XK_f,           togglefloating, {0} },
+	{ MODKEY,                       XK_m,           setlayout,      {.v = &layouts[2]} },
+	{ MODKEY|ShiftMask,             XK_space,       zoom,           {0} },
+	{ MODKEY,                       XK_0,           tag,            {.ui = ~0 } },
+	{ MODKEY,                       XK_h,           focusmon,       {.i = -1 } },
+	{ MODKEY,                       XK_l,           focusmon,       {.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_h,           tagmon,         {.i = -1 } },
+	{ MODKEY|ShiftMask,             XK_l,           tagmon,         {.i = +1 } },
+	TAGKEYS(                        XK_1,                           0)
+	TAGKEYS(                        XK_2,                           1)
+	TAGKEYS(                        XK_3,                           2)
+	TAGKEYS(                        XK_4,                           3)
+	TAGKEYS(                        XK_5,                           4)
+	TAGKEYS(                        XK_6,                           5)
+	TAGKEYS(                        XK_7,                           6)
+	TAGKEYS(                        XK_8,                           7)
+	TAGKEYS(                        XK_9,                           8)
+	{ MODKEY|ShiftMask,             XK_q,           quit,           {0} },
 };
 
 /* button definitions */
