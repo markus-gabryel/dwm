@@ -60,9 +60,9 @@ static const char *powermenucmd[] = { "powermenu", "-m", dmenumon, "-fn", dmenuf
 static const char *termcmd[]      = { "st", NULL };
 static const char *browsercmd[]   = { "brave-browser", NULL };
 static const char *mixercmd[]     = { "st", "-e", "pulsemixer", NULL };
-static const char *togglemiccmd[] = { "amixer", "-Dpulse", "sset", "Capture", "toggle", NULL };
-static const char *decrvolcmd[]   = { "amixer", "-Dpulse", "sset", "Master", "5%-", NULL };
-static const char *incrvolcmd[]   = { "amixer", "-Dpulse", "sset", "Master", "5%+", NULL };
+static const char *togglemiccmd[] = { "pamixer", "--source", "2", "-t", NULL };
+static const char *decrvolcmd[]   = { "pamixer", "-d", "5", NULL };
+static const char *incrvolcmd[]   = { "pamixer", "-i", "5", NULL };
 static const char *printscrcmd[]  = { "flameshot", "gui", NULL };
 static const char *scrkeycmd[]    = { "sh", "-c", "killall screenkey || screenkey", NULL };
 
